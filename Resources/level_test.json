@@ -1,0 +1,30 @@
+{
+  "levelId": 1,
+  "playfield": [
+    {
+      "face": 1,
+      "suit": 1,
+      "x": 540,
+      "y": 1000,
+      "z": 1,
+      "faceUp": true
+    },
+    {
+      "face": 13,
+      "suit": 2,
+      "x": 500,
+      "y": 900,
+      "z": 0,
+      "faceUp": false
+    },
+    {
+      "face": 12,
+      "suit": 3,
+      "x": 580,
+      "y": 900,
+      "z": 0,
+      "faceUp": false
+    }
+  ],
+  "drawStack": []
+}
