@@ -7,8 +7,7 @@
 class GameController : public cocos2d::Ref {
 public:
     // 工厂方法：创建一个控制场景
-    // 注意：不再是 GameView::createScene，而是 Controller 来组装 Scene
-    static cocos2d::Scene* createGameScene();
+    static cocos2d::Scene* createGameScene(int levelId);
 
     static GameController* create(GameView* view, GameModel* model);
 
@@ -33,11 +32,18 @@ public:
 private:
     bool init(GameView* view, GameModel* model);
 
+    // 重新计算逻辑状态并刷新所有视图
+    void refreshBoardState();
+
     // 弱引用：View 和 Model 的生命周期由 Scene 或外部管理，Controller 只是协调者
     // 但为了方便，我们这里让 Controller 持有它们的引用计数
     GameView* _gameView;
     GameModel* _gameModel;
 
+    int _currentLevelId;
+
 
     std::unique_ptr<UndoManager> _undoManager;
+
+
 };

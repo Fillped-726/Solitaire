@@ -1,0 +1,69 @@
+{
+  "levelId": 3,
+  "playfield": [
+    {
+      "face": 4,
+      "suit": 0,
+      "x": 540,
+      "y": 1150,
+      "z": 0,
+      "faceUp": false
+    },
+
+    {
+      "face": 3,
+      "suit": 1,
+      "x": 480,
+      "y": 1050,
+      "z": 1,
+      "faceUp": false
+    },
+    {
+      "face": 5,
+      "suit": 2,
+      "x": 600,
+      "y": 1050,
+      "z": 1,
+      "faceUp": false
+    },
+
+    {
+      "face": 2,
+      "suit": 3,
+      "x": 420,
+      "y": 950,
+      "z": 2,
+      "faceUp": true
+    },
+    {
+      "face": 4,
+      "suit": 0,
+      "x": 540,
+      "y": 950,
+      "z": 2,
+      "faceUp": true
+    },
+    {
+      "face": 6,
+      "suit": 1,
+      "x": 660,
+      "y": 950,
+      "z": 2,
+      "faceUp": true
+    }
+  ],
+  "drawStack": [
+    {
+      "face": 5,
+      "suit": 3
+    },
+    {
+      "face": 1,
+      "suit": 2
+    },
+    {
+      "face": 7,
+      "suit": 3
+    }
+  ]
+}

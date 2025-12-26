@@ -36,8 +36,34 @@ public:
         return count;
     }
 
+    // [新增] 牌堆序列管理
+    void pushToDrawStack(int cardId) {
+        _drawStackIds.push_back(cardId);
+    }
+
+    // 获取下一张要发的牌 ID (如果没有了返回 -1)
+    int popNextDrawCard() {
+        if (_drawStackIds.empty()) return -1;
+
+        // 我们的逻辑是：序列的第0个是下一个要发的
+        int id = _drawStackIds.front();
+        _drawStackIds.erase(_drawStackIds.begin());
+        return id;
+    }
+
+    // 获取当前牌堆剩余数量
+    int getDrawStackSize() const {
+        return (int)_drawStackIds.size();
+    }
+
+    // [Undo 专用] 把牌塞回牌堆顶部 (撤销时用)
+    void pushBackToDrawStackTop(int cardId) {
+        _drawStackIds.insert(_drawStackIds.begin(), cardId);
+    }
+
 private:
     bool init();
     cocos2d::Vector<CardModel*> _allCards;
     int _topDiscardCardId = -1;
+    std::vector<int> _drawStackIds;
 };

@@ -26,6 +26,7 @@
 #include "HelloWorldScene.h"
 #include "views/GameView.h"
 #include "controllers/GameController.h"
+#include "views/LevelSelectScene.h"
 
 // #define USE_AUDIO_ENGINE 1
 
@@ -109,7 +110,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     register_all_packages();
 
     // create a scene. it's an autorelease object
-    auto scene = GameController::createGameScene();
+    auto scene = LevelSelectScene::createScene();
 
     // run
     director->runWithScene(scene);

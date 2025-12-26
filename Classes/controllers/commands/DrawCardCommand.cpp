@@ -54,6 +54,7 @@ void DrawCardCommand::undo() {
     card->setState(CardState::Deck);
     card->setFaceUp(false);
     _model->setTopCardId(_oldTopCardId);
+    _model->pushBackToDrawStackTop(_cardId);
 
     // 2. 视图恢复
     Vec2 deckPos = Vec2(200, 300); // 飞回左下角
@@ -68,6 +69,7 @@ void DrawCardCommand::undo() {
             // 这样看起来就像钻进了牌堆里
             cardView->setVisible(false);
             });
+        
     }
 
     CCLOG("CMD: Undo Draw Card %d", _cardId);
