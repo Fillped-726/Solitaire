@@ -61,26 +61,36 @@ void GameView::playMoveCardAnim(int cardId, const Vec2& targetPos, const std::fu
     auto cardView = getCardViewById(cardId);
     if (!cardView) return;
 
-    // 1. 提升层级，确保飞行的牌在最上层
+    // 1. [关键修复] 获取卡牌当前的缩放值 (比如 0.2)
+    float originalScale = cardView->getScale();
+
     cardView->setLocalZOrder(100);
 
-    // 2. 创建动作序列
-    // 0.3秒移动到目标位置
     auto moveTo = MoveTo::create(0.3f, targetPos);
-    // 稍微放大一点，增加视觉打击感
-    auto scaleUp = ScaleTo::create(0.1f, 1.2f);
-    auto scaleDown = ScaleTo::create(0.2f, 1.0f);
+
+    // 2. [关键修复] 基于原始缩放值计算动画幅度
+    // 稍微放大 1.2 倍，而不是固定变成 1.2
+    auto scaleUp = ScaleTo::create(0.1f, originalScale * 1.1f);
+    // 恢复到原始缩放值，而不是 1.0
+    auto scaleDown = ScaleTo::create(0.2f, originalScale);
+
     auto anim = Spawn::create(moveTo, Sequence::create(scaleUp, scaleDown, nullptr), nullptr);
 
-    // 3. 动作结束后的回调
     auto callback = CallFunc::create([cardView, onComplete, targetPos]() {
-        // 修正位置（防止浮点误差）
         cardView->setPosition(targetPos);
-        // 恢复层级 (或者这一步由 Controller 决定是否销毁)
-        cardView->setLocalZOrder(0);
-
+        cardView->setLocalZOrder(5); // 恢复层级
         if (onComplete) onComplete();
         });
 
     cardView->runAction(Sequence::create(anim, callback, nullptr));
+}
+
+void GameView::clearBoard() {
+    if (_playfieldLayer) {
+        _playfieldLayer->removeAllChildren();
+    }
+    if (_stackLayer) {
+        _stackLayer->removeAllChildren();
+    }
+    // 注意：不要调用 this->removeAllChildren()，那会把背景和 layer 都删掉
 }

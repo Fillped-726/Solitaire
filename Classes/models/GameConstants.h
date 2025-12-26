@@ -24,7 +24,8 @@ enum class CardFace {
 enum class CardState {
     Deck,       // 在备用牌堆
     Playfield,  // 在主牌桌（七列中）
-    Discard     // 在废弃堆（底牌区/手牌区）
+    Discard,     // 在废弃堆（底牌区/手牌区）
+    Removed        // 表示这张牌被移出游戏了
 };
 
 // 辅助：判断颜色（红/黑）

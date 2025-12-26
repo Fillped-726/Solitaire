@@ -25,6 +25,17 @@ public:
     void setTopCardId(int id) { _topDiscardCardId = id; }
     int getTopCardId() const { return _topDiscardCardId; }
 
+    int getPlayfieldCardCount() const {
+        int count = 0;
+        for (auto card : _allCards) {
+            // 只统计还在 Playfield 的牌
+            if (card->getState() == CardState::Playfield) {
+                count++;
+            }
+        }
+        return count;
+    }
+
 private:
     bool init();
     cocos2d::Vector<CardModel*> _allCards;

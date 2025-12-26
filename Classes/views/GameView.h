@@ -18,6 +18,9 @@ public:
     // 辅助：根据 ID 找到 CardView 节点
     CardView* getCardViewById(int cardId);
 
+    // 清空棋盘上的所有卡牌 (但不删除图层本身)
+    void clearBoard();
+
 private:
     // 布局容器节点
     cocos2d::Node* _playfieldLayer; // 主牌区

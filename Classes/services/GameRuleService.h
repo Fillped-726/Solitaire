@@ -22,4 +22,27 @@ public:
     static bool isWildCard(CardModel* card) {
         return false;
     }
+
+    static bool hasAnyMove(GameModel* model) {
+        if (!model) return false;
+
+        // 1. 获取当前的底牌
+        int topId = model->getTopCardId();
+        auto topCard = model->getCardById(topId);
+        if (!topCard) return false;
+
+        // 2. 遍历所有还在桌面的牌
+        for (auto card : model->getAllCards()) {
+            // 必须是 Playfield 且是 正面 (FaceUp) 才能被点击
+            if (card->getState() == CardState::Playfield && card->isFaceUp()) {
+                // 如果有一张能匹配，说明还没死局
+                if (canMatch(card, topCard)) {
+                    return true;
+                }
+            }
+        }
+
+        // 找遍了都没得消 -> 死局
+        return false;
+    }
 };

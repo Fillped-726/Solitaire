@@ -126,7 +126,7 @@ set(all_code_files
     )
 
 if(NOT ANDROID)
-    add_executable(${APP_NAME} ${all_code_files} "Classes/configs/LevelConfig.h" "Classes/configs/LevelConfigLoader.h" "Classes/configs/LevelConfigLoader.cpp" "Classes/models/GameConstants.h" "Classes/models/CardModel.h" "Classes/models/CardModel.cpp" "Classes/models/GameModel.h" "Classes/models/GameModel.cpp" "Classes/configs/CardResConfig.h" "Classes/views/CardView.h" "Classes/views/CardView.cpp" "Classes/views/GameView.h" "Classes/views/GameView.cpp" "Classes/services/GameRuleService.h" "Classes/managers/ICommand.h")
+    add_executable(${APP_NAME} ${all_code_files} "Classes/configs/LevelConfig.h" "Classes/configs/LevelConfigLoader.h" "Classes/configs/LevelConfigLoader.cpp" "Classes/models/GameConstants.h" "Classes/models/CardModel.h" "Classes/models/CardModel.cpp" "Classes/models/GameModel.h" "Classes/models/GameModel.cpp" "Classes/configs/CardResConfig.h" "Classes/views/CardView.h" "Classes/views/CardView.cpp" "Classes/views/GameView.h" "Classes/views/GameView.cpp" "Classes/services/GameRuleService.h" "Classes/managers/ICommand.h" "Classes/services/GameModelGenerator.h" "Classes/services/GameModelGenerator.cpp" "Classes/controllers/commands/DrawCardCommand.h" "Classes/controllers/commands/DrawCardCommand.cpp")
 else()
     add_library(${APP_NAME} SHARED ${all_code_files})
     add_subdirectory(${COCOS2DX_ROOT_PATH}/cocos/platform/android ${ENGINE_BINARY_PATH}/cocos/platform)

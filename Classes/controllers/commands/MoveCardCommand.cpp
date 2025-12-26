@@ -21,16 +21,31 @@ void MoveCardCommand::execute() {
     auto card = _model->getCardById(_cardId);
     if (!card) return;
 
-    // 1. 更新卡牌状态
+    // 1. 数据变更
     card->setState(CardState::Discard);
+    _model->setTopCardId(_cardId); // 注意：这里不需要手动 setFaceUp，因为桌面牌本来就是 FaceUp
 
-    // 2. [新增] 更新 Model 里的底牌记录
-    _model->setTopCardId(_cardId);
+    // 2. 视图表现
+    // [关键新增] 计算层级
+    int targetZ = 10;
+    auto oldBaseView = _view->getCardViewById(_oldTopCardId);
+    if (oldBaseView) {
+        targetZ = oldBaseView->getLocalZOrder() + 1;
+    }
 
-    // 3. 视图动画
-    _view->playMoveCardAnim(_cardId, _toPos, nullptr);
+    // 飞行时设为最高
+    auto cardView = _view->getCardViewById(_cardId);
+    if (cardView) {
+        cardView->setLocalZOrder(1000);
+    }
 
-    CCLOG("CMD: Execute Move Card %d -> Discard", _cardId);
+    _view->playMoveCardAnim(_cardId, _toPos, [this, targetZ]() { // 捕获 targetZ
+        // 动画结束，设置层级
+        auto v = _view->getCardViewById(_cardId);
+        if (v) v->setLocalZOrder(targetZ);
+        });
+
+    CCLOG("CMD: Move Card %d -> Discard (Z: %d)", _cardId, targetZ);
 }
 
 // [撤销逻辑]：一切反着来

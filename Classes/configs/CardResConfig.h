@@ -1,3 +1,8 @@
+ï»¿#pragma once
+#include "cocos2d.h"
+#include "models/GameConstants.h"
+#include <string>
+
 #pragma once
 #include "cocos2d.h"
 #include "models/GameConstants.h"
@@ -5,18 +10,37 @@
 
 class CardResConfig {
 public:
-    // »ñÈ¡¿¨ÅÆÕıÃæÍ¼Æ¬Â·¾¶
+    // è·å–æ­£é¢å›¾ç‰‡è·¯å¾„
     static std::string getCardImagePath(CardSuit suit, CardFace face) {
-        // ¼ÙÉèÄãµÄ×ÊÔ´ÃüÃû¹æÔòÊÇ "card_[suit]_[face].png"
-        // Êµ¼ÊÇë¸ù¾İÄãµÄ Resouces Ä¿Â¼ÏÂµÄÎÄ¼şÃûĞŞ¸ÄÕâÀï
-        // ÀıÈç£ºsuit(0-3), face(1-13)
-        // Ò²¿ÉÒÔÊ¹ÓÃ¼òµ¥µÄ switch-case Ó³Éä
-        // ÕâÀïÖ»ÊÇÒ»¸öÊ¾ÀıÕ¼Î»·û£¬ÇëÈ·±£ Resources Ä¿Â¼ÏÂÓĞ¶ÔÓ¦µÄÍ¼Æ¬£¬»òÕßÓĞÒ»ÕÅ default.png
-        return "res/suits/club.png";
+        // 1. è½¬æ¢èŠ±è‰² (Enum -> String)
+        std::string suitStr = "";
+        switch (suit) {
+        case CardSuit::Clubs:    suitStr = "clubs"; break;
+        case CardSuit::Diamonds: suitStr = "diamonds"; break;
+        case CardSuit::Hearts:   suitStr = "hearts"; break;
+        case CardSuit::Spades:   suitStr = "spades"; break;
+        default: return "card_empty.png"; // é˜²å¾¡æ€§ç¼–ç¨‹
+        }
+
+        // 2. è½¬æ¢ç‚¹æ•° (Enum -> String)
+        std::string faceStr = "";
+        int faceInt = (int)face;
+        if (faceInt == 1) faceStr = "A";
+        else if (faceInt == 11) faceStr = "J";
+        else if (faceInt == 12) faceStr = "Q";
+        else if (faceInt == 13) faceStr = "K";
+        else faceStr = cocos2d::StringUtils::format("%02d", faceInt); // 2-10 ç›´æ¥è½¬æ•°å­—å­—ç¬¦ä¸²
+
+        // 3. æ‹¼æ¥å®Œæ•´è·¯å¾„
+        // æ³¨æ„è·¯å¾„åŒ…å«æ–‡ä»¶å¤¹ï¼šres/Cards (large)/
+        // æ ¼å¼ç¤ºä¾‹ï¼šres/Cards (large)/card_spades_Q.png
+        return cocos2d::StringUtils::format("res/PNG/Cards (large)/card_%s_%s.png",
+            suitStr.c_str(), faceStr.c_str());
     }
 
-    // »ñÈ¡¿¨ÅÆ±³ÃæÍ¼Æ¬Â·¾¶
+    // è·å–èƒŒé¢å›¾ç‰‡è·¯å¾„
     static std::string getBackImagePath() {
-        return "res/card_general.png";
+        // è¯·ç¡®ä¿ä½ åˆšæ‰é‡å‘½åçš„æ–‡ä»¶åœ¨è¿™ä¸ªè·¯å¾„ä¸‹
+        return "res/PNG/Cards (large)/card_back.png";
     }
 };

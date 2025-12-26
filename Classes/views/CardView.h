@@ -16,7 +16,6 @@ public:
     // 获取绑定的 Model ID
     int getCardId() const { return _cardId; }
 
-    
 
 private:
     bool init(CardModel* model);
@@ -35,4 +34,6 @@ private:
     CardModel* _modelRef;
 
     std::function<void(int)> _onClickCallback;
+
+    float _baseScale = 1.0f;
 };

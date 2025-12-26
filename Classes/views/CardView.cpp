@@ -14,32 +14,21 @@ CardView* CardView::create(CardModel* model) {
 }
 
 bool CardView::init(CardModel* model) {
-    
-    // 1. 无论是否有图片，先初始化父类
-    if (!Sprite::init()) {
-        return false;
-    }
+    // 1. 初始化 Sprite (此时还没纹理，或者给个默认的)
+    if (!Sprite::init()) return false;
 
     _modelRef = model;
     _cardId = model->getId();
-    _isFaceUp = model->isFaceUp();
 
-    // 2. 【强制显色】创建一个 150x200 的红色色块
-    // 这样我们就不用担心 Resources 里的图片路径对不对了
-    auto colorLayer = LayerColor::create(Color4B::RED, 150, 200);
-    colorLayer->setPosition(Vec2(-75, -100)); // 居中偏移
-    this->addChild(colorLayer);
+    // 2. 立即刷新一次显示 (加载正确的图片)
+    this->updateView();
 
-    // 3. 设置触摸区域大小 (关键！否则点不到)
-    this->setContentSize(Size(150, 200));
-
-    // 4. 触摸监听
+    // 3. 触摸监听 (保持不变)
     auto listener = EventListenerTouchOneByOne::create();
     listener->setSwallowTouches(true);
     listener->onTouchBegan = CC_CALLBACK_2(CardView::onTouchBegan, this);
     listener->onTouchEnded = CC_CALLBACK_2(CardView::onTouchEnded, this);
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
-
 
     return true;
 }
@@ -47,19 +36,24 @@ bool CardView::init(CardModel* model) {
 void CardView::updateView() {
     if (!_modelRef) return;
 
-    // 状态同步：如果 Model 变了，View 也要变
-    bool modelFaceUp = _modelRef->isFaceUp();
-
     std::string imgPath;
-    if (modelFaceUp) {
+    if (_modelRef->isFaceUp()) {
+        // 正面
         imgPath = CardResConfig::getCardImagePath(_modelRef->getSuit(), _modelRef->getFace());
     }
     else {
+        // 背面
         imgPath = CardResConfig::getBackImagePath();
     }
 
-    // 重新设置纹理
     this->setTexture(imgPath);
+
+    // [关键修改] 计算缩放并保存到 _baseScale
+    if (this->getContentSize().width > 0) {
+        // 假设目标宽度是 180 像素 (根据你的屏幕调整)
+        _baseScale = 180.0f / this->getContentSize().width;
+        this->setScale(_baseScale);
+    }
 }
 
 void CardView::setOnClickCallback(const std::function<void(int)>& callback) {
@@ -73,20 +67,19 @@ bool CardView::onTouchBegan(Touch* touch, Event* event) {
     Rect rect = Rect(0, 0, s.width, s.height);
 
     if (rect.containsPoint(locationInNode)) {
-        // 视觉反馈：稍微变暗或缩放，让用户感觉“按下了”
-        this->setScale(0.95f);
-        return true; // 声明消费此事件
+        // [关键修改] 基于 _baseScale 稍微变小一点点 (比如 95%)
+        this->setScale(_baseScale * 0.95f);
+        return true;
     }
     return false;
 }
 
 void CardView::onTouchEnded(Touch* touch, Event* event) {
-    // 恢复缩放
-    this->setScale(1.0f);
+    // [关键修改] 恢复到正常大小，而不是 1.0
+    this->setScale(_baseScale);
 
-    // 触发回调：View 的任务完成了，剩下的交给 Controller
     if (_onClickCallback) {
-        // [Cite: 55, 67] View 捕获事件 -> 触发回调 -> Controller 处理
         _onClickCallback(_cardId);
     }
 }
+

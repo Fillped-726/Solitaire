@@ -21,6 +21,15 @@ public:
     // 处理回退按钮点击
     void handleUndo(); 
 
+    // 弃牌堆
+    void handleDrawPileClick();
+
+    // 状态检查
+    void checkGameState();
+
+    // 胜利结算
+    void showGameOverUI(bool win);
+
 private:
     bool init(GameView* view, GameModel* model);
 
@@ -29,8 +38,6 @@ private:
     GameView* _gameView;
     GameModel* _gameModel;
 
-    // 缓存：当前“手牌区”顶部的牌（即底牌）的 ID
-    int _topDiscardCardId;
 
     std::unique_ptr<UndoManager> _undoManager;
 };

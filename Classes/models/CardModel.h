@@ -30,6 +30,13 @@ public:
     // 从 JSON 恢复数据
     bool fromJson(const rapidjson::Value& jsonValue);
 
+    //  初始位置数据
+    void setPosition(const cocos2d::Vec2& pos) { _position = pos; }
+    const cocos2d::Vec2& getPosition() const { return _position; }
+
+    void setZOrder(int z) { _zOrder = z; }
+    int getZOrder() const { return _zOrder; }
+
 private:
     bool init(int id, CardFace face, CardSuit suit);
 
@@ -38,4 +45,6 @@ private:
     CardSuit _suit;         // 花色
     bool _isFaceUp;         // 正反面状态
     CardState _state;       //卡牌状态
+    cocos2d::Vec2 _position; // 逻辑坐标
+    int _zOrder;            // 逻辑层级
 };
