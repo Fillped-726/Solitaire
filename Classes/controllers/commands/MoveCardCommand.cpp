@@ -9,58 +9,65 @@ MoveCardCommand::MoveCardCommand(GameModel* model, GameView* view,
     _cardId(cardId), _oldTopCardId(oldTopCardId),
     _fromPos(fromPos), _toPos(toPos)
 {
-    // 记录原始状态，以便撤销
+    // 只记录逻辑状态，不记录 View 层的 ZOrder
     auto card = _model->getCardById(_cardId);
     if (card) {
         _prevState = card->getState();
     }
 }
 
-// [执行逻辑]：和昨天写的差不多，变成底牌
 void MoveCardCommand::execute() {
     auto card = _model->getCardById(_cardId);
     if (!card) return;
 
     // 1. 数据变更
     card->setState(CardState::Discard);
-    _model->setTopCardId(_cardId); // 注意：这里不需要手动 setFaceUp，因为桌面牌本来就是 FaceUp
+    _model->setTopCardId(_cardId);
 
     // 2. 视图表现
-    // [关键新增] 计算层级
     int targetZ = 10;
     auto oldBaseView = _view->getCardViewById(_oldTopCardId);
     if (oldBaseView) {
         targetZ = oldBaseView->getLocalZOrder() + 1;
     }
 
-    // 飞行时设为最高
     auto cardView = _view->getCardViewById(_cardId);
     if (cardView) {
+        // 飞行时设为最高，防止被其他牌遮挡
         cardView->setLocalZOrder(1000);
     }
 
-    _view->playMoveCardAnim(_cardId, _toPos, [this, targetZ]() { // 捕获 targetZ
-        // 动画结束，设置层级
+    // 播放动画
+    _view->playMoveCardAnim(_cardId, _toPos, [this, targetZ]() {
         auto v = _view->getCardViewById(_cardId);
+        // 动画结束，设置为底牌堆叠的层级
         if (v) v->setLocalZOrder(targetZ);
         });
 
-    CCLOG("CMD: Move Card %d -> Discard (Z: %d)", _cardId, targetZ);
+    CCLOG("CMD: Move Card %d -> Discard", _cardId);
 }
 
-// [撤销逻辑]：一切反着来
 void MoveCardCommand::undo() {
     auto card = _model->getCardById(_cardId);
     if (!card) return;
 
-    // 1. 恢复卡牌状态
+    // 1. 数据恢复
     card->setState(_prevState);
-
-    // 2. [关键修复] 恢复旧的底牌 ID！
     _model->setTopCardId(_oldTopCardId);
 
-    // 3. 视图动画
-    _view->playMoveCardAnim(_cardId, _fromPos, nullptr);
+    // 2. 视图恢复
+    auto cardView = _view->getCardViewById(_cardId);
+    if (cardView) {
+        // 飞行时临时提权
+        cardView->setLocalZOrder(1000);
+    }
 
-    CCLOG("CMD: Undo Move Card %d -> Back. Top Card Restored to %d", _cardId, _oldTopCardId);
+    // 3. 动画飞回
+    _view->playMoveCardAnim(_cardId, _fromPos, [this, card, cardView]() {
+        if (cardView && card) {
+            cardView->setLocalZOrder(card->getZOrder());
+        }
+        });
+
+    CCLOG("CMD: Undo Move Card %d", _cardId);
 }

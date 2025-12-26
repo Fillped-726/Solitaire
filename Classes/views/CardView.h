@@ -3,37 +3,46 @@
 #include "models/CardModel.h"
 #include <functional>
 
+/**
+ * @class CardView
+ * @brief 单张卡牌的视图节点
+ * @responsibility 负责显示卡牌的纹理（正面/背面）、响应触摸事件并反馈给 Controller。
+ * @usage 由 GameView 创建和管理。
+ */
 class CardView : public cocos2d::Sprite {
 public:
-    static CardView* create(CardModel* model);
+    /**
+     * @brief 静态工厂方法
+     * @param model 卡牌数据模型（只读）
+     */
+    static CardView* create(const CardModel* model);
 
-    // 根据 Model 数据刷新显示（翻面、换图）
+    /**
+     * @brief 根据 Model 数据刷新显示
+     * 更新正反面纹理、缩放等。
+     */
     void updateView();
 
-    // 设置点击回调函数 (Controller 将绑定这个接口)
+    /**
+     * @brief 设置点击回调函数
+     * @param callback 接收卡牌ID的回调
+     */
     void setOnClickCallback(const std::function<void(int cardId)>& callback);
 
-    // 获取绑定的 Model ID
     int getCardId() const { return _cardId; }
 
-
 private:
-    bool init(CardModel* model);
+    bool init(const CardModel* model);
 
-    // 触摸事件处理
+    // 触摸事件回调
     bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event);
     void onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event);
 
-    int _cardId;        // 缓存 ID
-    bool _isFaceUp;     // 缓存当前显示状态
+    int _cardId;            ///< 卡牌 ID 缓存
 
-    // 弱引用：View 不拥有 Model，Model 由 GameModel 管理
-    // 这里我们只在创建时读取一次，或者每次 updateView 读取。
-    // 为了解耦，View 甚至可以不持有 Model 指针，只持有 ID 和数据快照。
-    // 但为了方便 updateView，持有弱引用或裸指针（需保证 Model 活得比 View 长）是常见的。
-    CardModel* _modelRef;
+    // [MVC修正] View 持有 Model 的只读指针
+    const CardModel* _modelRef;
 
     std::function<void(int)> _onClickCallback;
-
-    float _baseScale = 1.0f;
+    float _baseScale = 1.0f; ///< 基于屏幕适配的基准缩放值
 };

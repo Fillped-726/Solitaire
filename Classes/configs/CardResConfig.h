@@ -3,14 +3,21 @@
 #include "models/GameConstants.h"
 #include <string>
 
-#pragma once
-#include "cocos2d.h"
-#include "models/GameConstants.h"
-#include <string>
-
+/**
+ * @class CardResConfig
+ * @brief 卡牌资源路径配置辅助类
+ * * @func 提供根据卡牌花色、点数获取对应图片资源路径的静态方法。
+ * @responsibility 负责资源路径的拼接逻辑，不持有任何状态。
+ * @usage 在 View 层创建卡牌 Sprite 时调用。
+ */
 class CardResConfig {
 public:
-    // 获取正面图片路径
+    /**
+     * @brief 获取卡牌正面图片的资源路径
+     * @param suit 卡牌花色 (枚举)
+     * @param face 卡牌点数 (枚举)
+     * @return std::string 完整的图片路径 (e.g., "res/PNG/Cards/card_spades_Q.png")
+     */
     static std::string getCardImagePath(CardSuit suit, CardFace face) {
         // 1. 转换花色 (Enum -> String)
         std::string suitStr = "";
@@ -19,7 +26,7 @@ public:
         case CardSuit::Diamonds: suitStr = "diamonds"; break;
         case CardSuit::Hearts:   suitStr = "hearts"; break;
         case CardSuit::Spades:   suitStr = "spades"; break;
-        default: return "card_empty.png"; // 防御性编程
+        default: return "card_empty.png";
         }
 
         // 2. 转换点数 (Enum -> String)
@@ -29,18 +36,18 @@ public:
         else if (faceInt == 11) faceStr = "J";
         else if (faceInt == 12) faceStr = "Q";
         else if (faceInt == 13) faceStr = "K";
-        else faceStr = cocos2d::StringUtils::format("%02d", faceInt); // 2-10 直接转数字字符串
+        else faceStr = cocos2d::StringUtils::format("%02d", faceInt);
 
         // 3. 拼接完整路径
-        // 注意路径包含文件夹：res/Cards (large)/
-        // 格式示例：res/Cards (large)/card_spades_Q.png
         return cocos2d::StringUtils::format("res/PNG/Cards (large)/card_%s_%s.png",
             suitStr.c_str(), faceStr.c_str());
     }
 
-    // 获取背面图片路径
+    /**
+     * @brief 获取卡牌背面图片的资源路径
+     * @return std::string 背面图片路径
+     */
     static std::string getBackImagePath() {
-        // 请确保你刚才重命名的文件在这个路径下
         return "res/PNG/Cards (large)/card_back.png";
     }
 };

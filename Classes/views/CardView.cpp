@@ -3,7 +3,7 @@
 
 USING_NS_CC;
 
-CardView* CardView::create(CardModel* model) {
+CardView* CardView::create(const CardModel* model) {
     CardView* view = new (std::nothrow) CardView();
     if (view && view->init(model)) {
         view->autorelease();
@@ -13,17 +13,16 @@ CardView* CardView::create(CardModel* model) {
     return nullptr;
 }
 
-bool CardView::init(CardModel* model) {
-    // 1. 初始化 Sprite (此时还没纹理，或者给个默认的)
+bool CardView::init(const CardModel* model) {
     if (!Sprite::init()) return false;
 
     _modelRef = model;
     _cardId = model->getId();
 
-    // 2. 立即刷新一次显示 (加载正确的图片)
+    // 立即刷新外观
     this->updateView();
 
-    // 3. 触摸监听 (保持不变)
+    // 绑定触摸监听
     auto listener = EventListenerTouchOneByOne::create();
     listener->setSwallowTouches(true);
     listener->onTouchBegan = CC_CALLBACK_2(CardView::onTouchBegan, this);
@@ -38,19 +37,16 @@ void CardView::updateView() {
 
     std::string imgPath;
     if (_modelRef->isFaceUp()) {
-        // 正面
         imgPath = CardResConfig::getCardImagePath(_modelRef->getSuit(), _modelRef->getFace());
     }
     else {
-        // 背面
         imgPath = CardResConfig::getBackImagePath();
     }
 
     this->setTexture(imgPath);
 
-    // [关键修改] 计算缩放并保存到 _baseScale
+    // 动态计算缩放：假设标准宽度为 180px
     if (this->getContentSize().width > 0) {
-        // 假设目标宽度是 180 像素 (根据你的屏幕调整)
         _baseScale = 180.0f / this->getContentSize().width;
         this->setScale(_baseScale);
     }
@@ -61,13 +57,12 @@ void CardView::setOnClickCallback(const std::function<void(int)>& callback) {
 }
 
 bool CardView::onTouchBegan(Touch* touch, Event* event) {
-    // 1. 坐标转换：判断点击点是否在当前 Sprite 内部
     Vec2 locationInNode = this->convertToNodeSpace(touch->getLocation());
     Size s = this->getContentSize();
     Rect rect = Rect(0, 0, s.width, s.height);
 
     if (rect.containsPoint(locationInNode)) {
-        // [关键修改] 基于 _baseScale 稍微变小一点点 (比如 95%)
+        // 点击反馈：轻微缩小
         this->setScale(_baseScale * 0.95f);
         return true;
     }
@@ -75,11 +70,13 @@ bool CardView::onTouchBegan(Touch* touch, Event* event) {
 }
 
 void CardView::onTouchEnded(Touch* touch, Event* event) {
-    // [关键修改] 恢复到正常大小，而不是 1.0
+    // 恢复缩放
     this->setScale(_baseScale);
 
+    // 触发点击逻辑
+    // 注意：这里简化了逻辑，只要点了并且松开就触发，不管松开时手指是否移出了卡牌
+    // 如果需要严格判定，需再次检查 rect.containsPoint
     if (_onClickCallback) {
         _onClickCallback(_cardId);
     }
 }
-

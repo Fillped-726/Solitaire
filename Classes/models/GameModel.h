@@ -1,69 +1,87 @@
 #pragma once
 #include "cocos2d.h"
 #include "CardModel.h"
+#include <vector>
+#include <string>
 
+/**
+ * @class GameModel
+ * @brief 全局游戏数据模型
+ * @responsibility 管理所有卡牌对象的生命周期、牌堆序列以及游戏快照序列化。
+ * @usage 通常由 Controller 持有，作为单一数据源。
+ */
 class GameModel : public cocos2d::Ref {
 public:
     static GameModel* create();
 
-    //  初始化一副标准的 52 张牌
+    /**
+     * @brief 初始化一副标准的 52 张牌
+     * 会自动清空现有数据并重置牌堆。
+     */
     void initStandardDeck();
 
-    // 初始化牌组数据（清空并重新生成）
+    /**
+     * @brief 重置游戏数据
+     * 清空所有卡牌和牌堆记录。
+     */
     void reset();
 
-    // 核心数据容器：使用 Cocos Vector 自动管理内存
+    /**
+     * @brief 获取所有卡牌容器
+     * @return cocos2d::Vector<CardModel*>& 卡牌列表引用
+     */
     cocos2d::Vector<CardModel*>& getAllCards() { return _allCards; }
 
-    // 根据 ID 查找卡牌 (O(N) 查找，对于 52 张牌足够快)
+    /**
+     * @brief 根据 ID 查找卡牌
+     * @param id 卡牌 ID
+     * @return CardModel* 找到返回指针，未找到返回 nullptr
+     */
     CardModel* getCardById(int id);
 
-    // 序列化整个游戏状态（包含所有卡牌）
+    /**
+     * @brief 序列化整个游戏状态
+     * @return std::string JSON 字符串
+     */
     std::string serializeToJson();
 
-    // 管理当前底牌的 ID
+    // --- 牌堆与状态管理 ---
+
     void setTopCardId(int id) { _topDiscardCardId = id; }
     int getTopCardId() const { return _topDiscardCardId; }
 
-    int getPlayfieldCardCount() const {
-        int count = 0;
-        for (auto card : _allCards) {
-            // 只统计还在 Playfield 的牌
-            if (card->getState() == CardState::Playfield) {
-                count++;
-            }
-        }
-        return count;
-    }
+    /**
+     * @brief 获取当前主牌桌上的卡牌数量
+     * 用于判断游戏进度。
+     */
+    int getPlayfieldCardCount() const;
 
-    // [新增] 牌堆序列管理
-    void pushToDrawStack(int cardId) {
-        _drawStackIds.push_back(cardId);
-    }
+    /**
+     * @brief 将卡牌 ID 加入备用牌堆尾部
+     */
+    void pushToDrawStack(int cardId);
 
-    // 获取下一张要发的牌 ID (如果没有了返回 -1)
-    int popNextDrawCard() {
-        if (_drawStackIds.empty()) return -1;
+    /**
+     * @brief 从备用牌堆取出一张牌
+     * @return int 卡牌 ID，若无牌则返回 -1
+     */
+    int popNextDrawCard();
 
-        // 我们的逻辑是：序列的第0个是下一个要发的
-        int id = _drawStackIds.front();
-        _drawStackIds.erase(_drawStackIds.begin());
-        return id;
-    }
+    /**
+     * @brief 获取备用牌堆剩余数量
+     */
+    int getDrawStackSize() const;
 
-    // 获取当前牌堆剩余数量
-    int getDrawStackSize() const {
-        return (int)_drawStackIds.size();
-    }
-
-    // [Undo 专用] 把牌塞回牌堆顶部 (撤销时用)
-    void pushBackToDrawStackTop(int cardId) {
-        _drawStackIds.insert(_drawStackIds.begin(), cardId);
-    }
+    /**
+     * @brief [Undo] 将牌放回备用牌堆顶部
+     * 用于撤销操作。
+     */
+    void pushBackToDrawStackTop(int cardId);
 
 private:
     bool init();
-    cocos2d::Vector<CardModel*> _allCards;
-    int _topDiscardCardId = -1;
-    std::vector<int> _drawStackIds;
+
+    cocos2d::Vector<CardModel*> _allCards;  ///< 所有卡牌的持有者
+    int _topDiscardCardId = -1;             ///< 当前弃牌堆顶部的卡牌ID
+    std::vector<int> _drawStackIds;         ///< 备用牌堆的卡牌ID序列
 };

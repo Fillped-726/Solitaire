@@ -11,7 +11,6 @@ bool LevelSelectScene::init() {
     if (!Scene::init()) return false;
 
     auto visibleSize = Director::getInstance()->getVisibleSize();
-    Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
     // 1. 背景
     auto bg = LayerColor::create(Color4B(50, 50, 80, 255));
@@ -22,19 +21,18 @@ bool LevelSelectScene::init() {
     label->setPosition(Vec2(visibleSize.width / 2, visibleSize.height - 200));
     this->addChild(label);
 
-    // 3. 关卡按钮 (假设有 3 关)
+    // 3. 关卡按钮生成
     Vector<MenuItem*> menuItems;
     for (int i = 1; i <= 3; ++i) {
         std::string text = StringUtils::format("Level %d", i);
         auto itemLabel = Label::createWithSystemFont(text, "Arial", 60);
 
-        auto item = MenuItemLabel::create(itemLabel, [i](Ref* sender) {
-            // 点击进入对应的关卡
+        auto item = MenuItemLabel::create(itemLabel, [i](Ref*) {
+            // 切换场景
             auto gameScene = GameController::createGameScene(i);
             Director::getInstance()->replaceScene(TransitionFade::create(0.5f, gameScene));
             });
 
-        // 简单的垂直排列
         item->setPosition(Vec2(visibleSize.width / 2, visibleSize.height - 400 - (i * 150)));
         menuItems.pushBack(item);
     }

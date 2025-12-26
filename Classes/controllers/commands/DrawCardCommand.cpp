@@ -11,34 +11,30 @@ void DrawCardCommand::execute() {
     auto card = _model->getCardById(_cardId);
     if (!card) return;
 
-    // 1. 数据变更
+    // 1. 数据变更：从牌堆移到底牌区，并设为正面
     card->setState(CardState::Discard);
     card->setFaceUp(true);
     _model->setTopCardId(_cardId);
 
-    // 2. 视图表现
-    Vec2 targetPos = Vec2(540, 300);
-    auto cardView = _view->getCardViewById(_cardId);
-
-    int targetZ = 10; // 默认基础高度
+    // 2. 视图变更：计算目标层级
+    int targetZ = 10;
     auto oldBaseView = _view->getCardViewById(_oldTopCardId);
     if (oldBaseView) {
-        // 让新牌永远比旧牌高 1 层
+        // 保证新牌在旧牌上面
         targetZ = oldBaseView->getLocalZOrder() + 1;
     }
 
+    auto cardView = _view->getCardViewById(_cardId);
     if (cardView) {
-        // [关键] 它是从隐形状态出来的，必须设为可见！
+        // 关键状态切换：从不可见(Deck)变为可见
         cardView->setVisible(true);
+        cardView->updateView(); // 刷新贴图
 
-        cardView->updateView();
-
-        // 确保它飞的时候在最上层，飞完后盖在旧底牌上
-        // 之前旧底牌Z可能是0或5，我们这里给个更高的值，比如 10
+        // 动画过程设为高层级，防止穿插
         cardView->setLocalZOrder(100);
 
-        _view->playMoveCardAnim(_cardId, targetPos, [cardView, targetZ]() {
-            // 动画结束，应用计算好的层级
+        _view->playMoveCardAnim(_cardId, kDiscardPilePos, [cardView, targetZ]() {
+            // 动画结束后，设定为正确的堆叠层级
             cardView->setLocalZOrder(targetZ);
             });
     }
@@ -50,26 +46,27 @@ void DrawCardCommand::undo() {
     auto card = _model->getCardById(_cardId);
     if (!card) return;
 
-    // 1. 数据恢复
+    // 1. 数据恢复：回退到牌堆
     card->setState(CardState::Deck);
     card->setFaceUp(false);
+
+    // 恢复旧的 Top ID
     _model->setTopCardId(_oldTopCardId);
+
+    // 核心逻辑：将 ID 插回牌堆序列的头部 (Model 层修复后的逻辑)
     _model->pushBackToDrawStackTop(_cardId);
 
-    // 2. 视图恢复
-    Vec2 deckPos = Vec2(200, 300); // 飞回左下角
-
+    // 2. 视图恢复：飞回左下角
     auto cardView = _view->getCardViewById(_cardId);
     if (cardView) {
-        // 飞回去
-        _view->playMoveCardAnim(_cardId, deckPos, [cardView]() {
-            cardView->updateView(); // 变回背面
+        // 保持高层级飞行
+        cardView->setLocalZOrder(100);
 
-            // [关键] 飞回牌堆后，重新变成隐形！
-            // 这样看起来就像钻进了牌堆里
+        _view->playMoveCardAnim(_cardId, kDeckPilePos, [cardView]() {
+            cardView->updateView(); // 变回背面
+            // 关键：飞回后设为不可见，模拟“进入牌堆”
             cardView->setVisible(false);
             });
-        
     }
 
     CCLOG("CMD: Undo Draw Card %d", _cardId);
